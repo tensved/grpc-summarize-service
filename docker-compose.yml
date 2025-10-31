@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  grpc-summarize-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: grpc-summarize-service
+    ports:
+      - "8088:8088"
+      - "8089:8089"
+    env_file:
+      - .env
+    environment:
+      - TZ=UTC
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8089/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - web
+
+networks:
+  web:
+    external: true

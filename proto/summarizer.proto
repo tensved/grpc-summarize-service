@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package summarizer;
+
+option go_package = "./proto";
+
+// Service for message summarization
+service SummarizerService {
+  // Main method for summarizing prepared messages
+  rpc Summarize(SummarizeRequest) returns (SummarizeResponse);
+  
+  // New method for summarizing Matrix room by credentials
+  rpc SummarizeMatrixRoom(SummarizeMatrixRoomRequest) returns (SummarizeMatrixRoomResponse);
+}
+
+// Request for summarizing prepared messages
+message SummarizeRequest {
+  // List of messages to summarize
+  repeated Message messages = 1;
+}
+
+// Request for summarizing Matrix room
+message SummarizeMatrixRoomRequest {
+  // Matrix user credentials (required)
+  string matrix_username = 1;        // user@example.com  
+  string matrix_password = 2;        // password123
+  
+  // Matrix server (one of two is required
+  )
+  string matrix_homeserver_url = 3;  // https://matrix.example.com (optional)
+  string matrix_servername = 4;      // example.com (optional, used if homeserver_url not specified)
+  
+  // Chat parameters (one of two is required)
+  string room_id = 5;                // !room123:example.com (optional)
+  string room_alias = 6;             // #general:example.com (optional)
+  
+  // Additional parameters
+  int32 message_count = 7;           // 50 (default 10)
+}
+
+// Chat message
+message Message {
+  // Message author
+  string author = 1;
+  // Message content
+  string content = 2;
+  // Send time (timestamp)
+  int64 timestamp = 3;
+  // Message type (text, image, file, etc.)
+  string message_type = 4;
+}
+
+// Summarization response
+message SummarizeResponse {
+  // Summarization result
+  string summary = 1;
+  // Number of processed messages
+  int32 message_count = 2;
+  // Processing status
+  string status = 3;
+  // Additional information
+  string metadata = 4;
+}
+
+// Matrix room summarization response
+message SummarizeMatrixRoomResponse {
+  // Summarization result
+  string summary = 1;
+}
