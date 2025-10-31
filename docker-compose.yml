@@ -23,6 +23,66 @@ services:
     networks:
       - web
 
+  snet-daemon:
+    build:
+      context: ./daemon
+      dockerfile: docker/Dockerfile
+      args:
+        VERSION: v6.1.3
+    container_name: snet-daemon
+    ports:
+      - "8085:8085"
+    volumes:
+      - ./daemon/singnet:/etc/singnet:ro
+    command: ["--config", "/etc/singnet/daemon.config.json"]
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - TZ=UTC
+      - DAEMON_DOMAIN=${DAEMON_DOMAIN}
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8085"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.snet-daemon.rule=Host(`${DAEMON_DOMAIN}`)"
+      - "traefik.http.routers.snet-daemon.entrypoints=websecure"
+      - "traefik.http.routers.snet-daemon.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.snet-daemon.service=snet-daemon-svc"
+      - "traefik.http.services.snet-daemon-svc.loadbalancer.server.port=8085"
+      - "traefik.http.services.snet-daemon-svc.loadbalancer.server.scheme=h2c"
+      - "traefik.docker.network=web"
+      
+      # CORS preflight для gRPC-Web
+      - "traefik.http.routers.snet-daemon-cors.rule=Host(`${DAEMON_DOMAIN}`) && Method(`OPTIONS`)"
+      - "traefik.http.routers.snet-daemon-cors.entrypoints=websecure"
+      - "traefik.http.routers.snet-daemon-cors.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.snet-daemon-cors.priority=3000"
+      - "traefik.http.routers.snet-daemon-cors.service=snet-daemon-http-svc"
+      
+      # gRPC-Web POST запросы
+      - "traefik.http.routers.snet-daemon-grpcweb.rule=Host(`${DAEMON_DOMAIN}`) && HeadersRegexp(`Content-Type`,`application/grpc-web`)"
+      - "traefik.http.routers.snet-daemon-grpcweb.entrypoints=websecure"
+      - "traefik.http.routers.snet-daemon-grpcweb.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.snet-daemon-grpcweb.priority=2000"
+      - "traefik.http.routers.snet-daemon-grpcweb.service=snet-daemon-http-svc"
+      
+      # HTTP endpoints (heartbeat, encoding)
+      - "traefik.http.routers.snet-daemon-http.rule=Host(`${DAEMON_DOMAIN}`) && (PathPrefix(`/heartbeat`) || PathPrefix(`/encoding`))"
+      - "traefik.http.routers.snet-daemon-http.entrypoints=websecure"
+      - "traefik.http.routers.snet-daemon-http.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.snet-daemon-http.priority=2500"
+      - "traefik.http.routers.snet-daemon-http.service=snet-daemon-http-svc"
+      
+      - "traefik.http.services.snet-daemon-http-svc.loadbalancer.server.port=8085"
+      - "traefik.http.services.snet-daemon-http-svc.loadbalancer.server.scheme=http"
+
 networks:
   web:
     external: true

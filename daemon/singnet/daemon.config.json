@@ -1,0 +1,21 @@
+{
+	"blockchain_network_selected": "sepolia",
+	"blockchain_enabled": true,
+	"service_endpoint": "grpc-summarize-service:8088",
+    "service_id": "",
+	"organization_id": "",
+	"heartbeat_endpoint": "http://grpc-summarize-service:8089/health",
+	"daemon_endpoint": "0.0.0.0:8085",
+	"daemon_group_name": "default_group",
+	"payment_channel_storage_type": "memory",
+	"ethereum_json_rpc_http_endpoint": "",
+	"ipfs_endpoint": "https://ipfs.singularitynet.io:443",
+	"private_key_for_free_calls": "",
+	"min_balance_for_free_call": 1,
+	"log": {
+		"level": "debug",
+		"output": {
+			"type": ["stdout"]
+		}
+	}
+}

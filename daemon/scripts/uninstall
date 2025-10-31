@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -ex
+
+
+PARENT_PATH=$(dirname $(cd $(dirname $0); pwd -P))
+
+pushd "$PARENT_PATH"
+rm -rf "$GOPATH"/bin/abigen
+rm -rf "$GOPATH"/bin/protoc-gen-go
+rm -rf "$GOPATH"/bin/protoc-gen-go-grpc
+rm -rf resources/blockchain/node_modules
+rm -rf resources/blockchain/build
+rm -rf blockchain/snet-contracts.go
+rm -rf build
+popd
